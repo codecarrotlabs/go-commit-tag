@@ -11,19 +11,35 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.19', '1.20', '1.21.', '1.22']
+
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Go
+    - name: Set up Go ${{ matrix.go-version }}
       uses: actions/setup-go@v5
       with:
-        go-version: '1.22'
+        go-version: ${{ matrix.go-version }}
+        cache-dependency-path: ${{ github.workspace }}/go.sum
 
     - name: Check go mod
       run: go mod tidy
 
-    - name: Build
+    - name: Install dependencies
+      run: go get .
+
+    - name: Build (Go v${{ matrix.go-version }})
       run: go build -v ./main.go
+
+    - name: Cache Go executable
+      if: matrix.go-version == '1.22'
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/main
+        # Generate a new cache whenever packages or source files change.
+        key: linux-OS-go-v${{ matrix.go-version }}-${{ hashFiles('**/go.mod') }}
 
 #    - name: Test
 #      run: go test -v ./...
@@ -34,7 +50,15 @@ jobs:
     needs: [build]
 
     steps:
+      - name: Cache Go executable
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/main
+          key: linux-OS-go-v1.22-${{ hashFiles('**/go.mod') }}
+          restore-keys: |
+            linux-OS-go-v1.22-${{ hashFiles('**/go.mod') }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: go-commit-tag
-          path: ./main
+          path: ${{ github.workspace }}/main
