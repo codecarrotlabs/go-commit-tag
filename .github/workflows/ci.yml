@@ -34,7 +34,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ github.workspace }}/main
-        key: linux-OS-go-${{ hashFiles('**/go.mod') }}
+        key: linux-OS-go-${{ github.sha }}
 
 #    - name: Test
 #      run: go test -v ./...
@@ -49,9 +49,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/main
-          key: linux-OS-go-v1.22-${{ hashFiles('**/go.mod') }}
-          restore-keys: |
-            linux-OS-go-v1.22-${{ hashFiles('**/go.mod') }}
+          key: linux-OS-go-${{ github.sha }}
+          restore-keys: linux-OS-go-${{ github.sha }}
 
       - uses: actions/upload-artifact@v4
         with:
