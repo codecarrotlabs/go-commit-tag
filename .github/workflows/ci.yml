@@ -23,8 +23,15 @@ jobs:
     - name: Build
       run: go build -v ./main.go
 
-    - name: "Find exec"
-      run: find
-
 #    - name: Test
 #      run: go test -v ./...
+
+  release:
+    if: github.event_name == 'push' && github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/upload-artifact@v4
+        with:
+          name: go-commit-tag
+          path: ./main
